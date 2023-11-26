@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator pothos {
+  provider = "prisma-pothos-types"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Define the model for books
+model Book {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  description String   @db.Text
+  author      Author   @relation(fields: [authorId], references: [id])
+  authorId    Int
+  issuedTo    Student? @relation(fields: [studentId], references: [id])
+  studentId   Int?
+}
+
+// Define the model for authors
+model Author {
+  id        Int     @id @default(autoincrement())
+  name      String  @db.VarChar(255)
+  books     Book[]
+}
+
+// Define the model for students
+model Student {
+  id        Int     @id @default(autoincrement())
+  name      String  @db.VarChar(255)
+  books     Book[]
+}
