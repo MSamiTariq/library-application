@@ -3,7 +3,7 @@ import Head from "next/head";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import type { Book } from "@prisma/client";
 import { MdDelete } from "react-icons/md";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const AllBookssQuery = gql`
@@ -27,9 +27,15 @@ const DeleteBookMutation = gql`
 `;
 
 export default function Home() {
-  const { data, loading, error } = useQuery(AllBookssQuery);
+  const { data, loading, error, refetch } = useQuery(AllBookssQuery);
   const [deleteBook] = useMutation(DeleteBookMutation);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !error) {
+      refetch();
+    }
+  }, []);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Oh no... {error.message}</p>;
@@ -42,7 +48,6 @@ export default function Home() {
         variables: { id },
         refetchQueries: [{ query: AllBookssQuery }],
       });
-      // Optionally, you can update your local state or refetch data after deletion
     } catch (error) {
       console.error("Error deleting link:");
     } finally {
@@ -62,9 +67,7 @@ export default function Home() {
           {data.books.map((book: Book) => (
             <Link href={`/edit/${book.id}`}>
               <li key={book.id} className="shadow  max-w-md  rounded">
-                {/* <img className="shadow-sm" src={link.imageUrl} /> */}
                 <div className="p-5 flex flex-col space-y-2">
-                  {/* <p className="text-sm text-blue-500">{book.title}</p> */}
                   <p className="text-lg font-medium">{book.title}</p>
                   <p className="text-gray-600">{book.description}</p>
                   <p className="text-gray-600">Student ID: {book.studentId}</p>
